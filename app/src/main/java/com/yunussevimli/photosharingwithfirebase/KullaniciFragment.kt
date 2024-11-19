@@ -31,7 +31,7 @@ class KullaniciFragment : Fragment() {
     }
 
     fun kayitOl(view: View){
-    val action = KullaniciFragmentDirections.actionKullaniciFragmentToFeedFragment()
+        val action = KullaniciFragmentDirections.actionKullaniciFragmentToFeedFragment()
         Navigation.findNavController(view).navigate(action)
     }
 

@@ -19,7 +19,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import com.yunussevimli.photosharingwithfirebase.databinding.FragmentYuklemeBinding
+import java.util.UUID
 
 class YuklemeFragment : Fragment() {
     private var _binding: FragmentYuklemeBinding? = null
@@ -29,9 +35,15 @@ class YuklemeFragment : Fragment() {
     private var secilenGorsel : Uri? = null // seçilen görselin uri'si tutulur
     private var secilenBitmap : Bitmap? = null // seçilen görselin bitmap'i tutulur
 
+    private lateinit var auth : FirebaseAuth
+    private lateinit var storage : FirebaseStorage
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         registerLauncher()
+
+        auth = Firebase.auth
+        storage = Firebase.storage
     }
 
     private fun registerLauncher() { // ActivityResultLauncher nesneleri oluşturulur
@@ -93,7 +105,21 @@ class YuklemeFragment : Fragment() {
     }
 
     fun yukleTiklandi(view: View){
-
+        val uuid = UUID.randomUUID() // rastgele bir uuid oluşturulur.
+        val gorselAdi = "${uuid}.jpg" // rastgele oluşturulan uuid'nin sonuna .jpg uzantısı eklenir
+        val reference = storage.reference
+        val gorselReference = reference.child("images").child(gorselAdi) // storage'da images klasörü altında uuid.jpg adında bir dosya oluşturulur. ismi rastgele oluşturmazsak her seferinde aynı isimde dosya oluşturulur ve eski dosya üzerine yazılır.
+        if(secilenGorsel != null) {
+            gorselReference.putFile(secilenGorsel!!).addOnSuccessListener { uploadTask ->
+                //url'yi alma işlemi yapacağız.
+                gorselReference.downloadUrl.addOnSuccessListener { uri ->
+                    val downloadUrl = uri.toString()
+                    println(downloadUrl)
+                }
+            }.addOnFailureListener { exception ->
+                Toast.makeText(requireContext(),exception.localizedMessage,Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     fun gorselSec(view: View){

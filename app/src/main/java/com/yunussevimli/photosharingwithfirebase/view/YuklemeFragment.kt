@@ -1,4 +1,4 @@
-package com.yunussevimli.photosharingwithfirebase
+package com.yunussevimli.photosharingwithfirebase.view
 
 import android.content.Intent
 import android.content.pm.PackageManager

@@ -1,4 +1,4 @@
-package com.yunussevimli.photosharingwithfirebase
+package com.yunussevimli.photosharingwithfirebase.view
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -9,12 +9,17 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.yunussevimli.photosharingwithfirebase.R
+import com.yunussevimli.photosharingwithfirebase.adaptor.PostAdaptor
 import com.yunussevimli.photosharingwithfirebase.databinding.FragmentFeedBinding
+import com.yunussevimli.photosharingwithfirebase.model.Post
 
 class FeedFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
     private var _binding: FragmentFeedBinding? = null
@@ -22,6 +27,8 @@ class FeedFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
     private lateinit var popup : PopupMenu
     private lateinit var auth : FirebaseAuth
     private lateinit var db : FirebaseFirestore
+    val postList : ArrayList<Post> = arrayListOf()
+    private var adapter : PostAdaptor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,21 +58,30 @@ class FeedFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
         }
 
         fireStoreVerileriAl()
+
+        adapter = PostAdaptor(postList)
+        binding.feedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.feedRecyclerView.adapter = adapter
     }
 
     private fun fireStoreVerileriAl(){
-        db.collection("Posts").addSnapshotListener{value, error ->
+        db.collection("Posts").orderBy("date",Query.Direction.DESCENDING).addSnapshotListener{value, error ->
             if(error != null){
                 Toast.makeText(requireContext(),error.localizedMessage,Toast.LENGTH_LONG).show()
             } else {
                 if(value != null) {
                     if(!value.isEmpty) {
-                        //boş değilse
+                        postList.clear()
                         val documents = value.documents
                         for (document in documents) {
                             val comment = document.get("comment") as String
-                            println(comment)
+                            val email = document.get("email") as String
+                            val downloadURL = document.get("downloadURL") as String
+
+                            val post = Post(email,comment,downloadURL)
+                            postList.add(post)
                         }
+                        adapter?.notifyDataSetChanged()
                     }
                 }
             }

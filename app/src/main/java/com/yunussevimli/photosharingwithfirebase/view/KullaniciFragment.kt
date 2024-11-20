@@ -1,4 +1,4 @@
-package com.yunussevimli.photosharingwithfirebase
+package com.yunussevimli.photosharingwithfirebase.view
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
